@@ -1,55 +1,62 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_printf.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: syaseen <syaseen@learner.42.tech>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/28 13:11:18 by syaseen           #+#    #+#             */
+/*   Updated: 2026/10/02 14:18:23 by syaseen          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "ft_printf.h"
 
-int ft_check(va_list args, char c)
+static int	ft_conversion(const char type, va_list vargs)
 {
- int re;
+	int		len;
 
- re = 0;
- if (c == 'd' || c == 'i')
-    re = ft_putnbr(va_arg(args, int));
- else if (c == 'c')
-    re = ft_putchar(va_arg(args, int));
- else if (c == 's')
-    re = ft_putstr(va_arg(args, char *));
- else if (c == 'x')
-    re = ft_puthex(va_arg(args, unsigned int));
- else if (c == 'X')
-    re = ft_puthex_up(va_arg(args, unsigned int));
- else if (c == 'p')
- {
-    unsigned long p = va_arg(args, unsigned long);
-    if (p == 0)
-        return (ft_putstr("(nil)"));
-    re = ft_putstr("0x");
-    re += ft_putptr(p);
- }
- else if (c == 'u')
-    re = ft_putunsigned(va_arg(args, unsigned int));
- else if (c == '%')
-    return (ft_putchar('%'));
- return (re);
+	len = 0;
+	if (type == 'c')
+		len += ft_printf_chr(va_arg(vargs, int));
+	else if (type == 's')
+		len += ft_printf_str(va_arg(vargs, char *));
+	else if (type == 'p')
+		len += ft_printf_ptr(va_arg(vargs, void *));
+	else if (type == 'd' || type == 'i')
+		len += ft_printf_nbr(va_arg(vargs, int));
+	else if (type == 'u')
+		len += ft_printf_un(va_arg(vargs, unsigned int));
+	else if (type == 'x')
+		len += ft_printf_hex(va_arg(vargs, unsigned long));
+	else if (type == 'X')
+		len += ft_printf_hex_up(va_arg(vargs, unsigned long));
+	else if (type == '%')
+		return (ft_printf_chr('%'));
+	return (len);
 }
 
-int ft_printf(const char *str, ...)
+int	ft_printf(const char *str, ...)
 {
- int  i;
- va_list args;
- int  re;
+	int		i;
+	int		len;
+	va_list	vargs;
 
- va_start(args, str);
- re = 0;
- i = 0;
- while (str[i])
- {
-  if (str[i] == '%')
-  {
-   if (str[i + 1] != '\0')
-      re += ft_check(args, str[++i]);
-  }
-  else
-      re += ft_putchar(str[i]);
- i++;
- }
- va_end(args);
- return (re);
+	if (!str)
+		return (-1);
+	len = 0;
+	i = 0;
+	va_start(vargs, str);
+	while (str[i])
+	{
+		if (str[i] == '%')
+		{
+			if (str[i + 1] != '\0')
+				len += ft_conversion(str[++i], vargs);
+		}
+		else
+			len += ft_printf_chr(str[i]);
+		i++;
+	}
+	va_end(vargs);
+	return (len);
 }
